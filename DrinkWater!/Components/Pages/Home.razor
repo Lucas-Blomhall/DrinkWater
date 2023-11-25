@@ -1,5 +1,43 @@
 ﻿@page "/"
+@using System.IO;
+@using DrinkWater.Components.ComponentModel
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Drink water!</PageTitle>
 
 <h1>Drink water!</h1>
+
+
+<EditForm Model="@waterIntakeGoal">
+    <p>Set your daily goal (1-20 glasses):</p>
+    <InputNumber @bind-Value="waterIntakeGoal.Goal" class="form-control" />
+    <ValidationMessage For="@(() => waterIntakeGoal.Goal)" />
+</EditForm>
+
+<p role="status">Times I have drinked: @currentCount</p>
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@if (imageSource is not null)
+{
+    <p>
+        <img src="@imageSource" />
+    </p>
+}
+
+@code {
+    private WaterIntakeGoal waterIntakeGoal = new();
+    private string? imageSource;
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+        UpdateImage();
+    }
+    private void UpdateImage()
+    {
+        int imageId = (int)Math.Ceiling((double)currentCount / waterIntakeGoal.Goal * 8);
+        imageId = Math.Min(imageId, 3);
+        imageSource = $"images/image{imageId}.jpg";
+    }
+}
