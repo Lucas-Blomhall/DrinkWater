@@ -1,30 +1,34 @@
 ﻿@page "/"
 @using System.IO;
 @using DrinkWater.Components.ComponentModel
-@inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
+@* @inject IJSRuntime JSRuntime *@
 
 <PageTitle>Drink water!</PageTitle>
 
-<h1>Drink water!</h1>
-
-
-<EditForm Model="@waterIntakeGoal">
+@* <EditForm Model="@waterIntakeGoal">
     <p>Set your daily goal (1-20 glasses):</p>
     <InputNumber @bind-Value="waterIntakeGoal.Goal" class="form-control" />
     <ValidationMessage For="@(() => waterIntakeGoal.Goal)" />
-</EditForm>
+</EditForm> *@
+
+
+<p>@countdownMessage</p>
+<button @onclick="StartCountdown">Start 1 Minute Countdown</button>
+
+
+<h1>Drink water!</h1>
 
 <p role="status">Times I have drinked: @currentCount</p>
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 <div>
-    <button @onclick="@ToggleAlert">Show/Hide</button>
+    <button @onclick="@ToggleAlert">Show/Hide Phone Notification Reminder</button>
 </div>
 
 <div class="alert alert-primary @HideAlert" role="alert">
     @AlertContent
-</div>
+</div>  
 
 @if (imageSources.Any())
 {
@@ -42,11 +46,41 @@
 @code {
     private string HideAlert { get; set; } = "d-none";
     private string AlertContent { get; set; } = "This is a primary alert—check it out!";
+    
     private void ToggleAlert()
     {
         HideAlert = HideAlert == "" ? "d-none" : "";
         AlertContent = "Stay hydrated!";
     }
+
+
+    private Timer? countdownTimer;
+    private int remainingSeconds = 60;
+    private string countdownMessage = "Click to start countdown";
+
+    private void StartCountdown()
+    {
+        remainingSeconds = 60; // Reset the timer to 60 seconds
+        countdownTimer?.Dispose(); // Dispose the existing timer if it's running
+        countdownTimer = new Timer(UpdateCountdown, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+    }
+
+    private void UpdateCountdown(object? state)
+    {
+        if (remainingSeconds > 0)
+        {
+            remainingSeconds--;
+            countdownMessage = $"{remainingSeconds} Seconds Remaining";
+        }
+        else
+        {
+            countdownMessage = "Time to drink water!";
+            countdownTimer?.Dispose();
+        }
+
+        InvokeAsync(StateHasChanged); // Re-render the component
+    }
+    
 
     private WaterIntakeGoal waterIntakeGoal = new();
     private string? imageSource;
@@ -75,25 +109,4 @@
         
         //imageSource = $"images/image1.jpg";
     }
-
-    DispatcherTimer timer1 = new DispatcherTimer();
-    private void button1_Click(object sender, RoutedEventArgs e)
-    {
-        timer1.Interval = new TimeSpan(0, 0, 0, 1);
-        timer1.Tick += new EventHandler(timer1_Tick);
-        timer1.Start();
-    }
-
-    int tik = 60;
-    void timer1_Tick(object sender, EventArgs e)
-    {
-        Countdown.Text = tik + " Seconds Remaining";
-        if (tik > 0)
-            tik--;
-        else
-            Countdown.Text = "Times Up";
-    }
-
-
-
 }
