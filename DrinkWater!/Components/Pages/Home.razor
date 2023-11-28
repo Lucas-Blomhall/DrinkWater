@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using System.IO;
 @using DrinkWater.Components.ComponentModel
+@inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
 <PageTitle>Drink water!</PageTitle>
@@ -17,27 +18,82 @@
 <p role="status">Times I have drinked: @currentCount</p>
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
-@if (imageSource is not null)
+<div>
+    <button @onclick="@ToggleAlert">Show/Hide</button>
+</div>
+
+<div class="alert alert-primary @HideAlert" role="alert">
+    @AlertContent
+</div>
+
+@if (imageSources.Any())
 {
-    <p>
-        <img src="@imageSource" />
-    </p>
+    //for loop that will take the count++ and iterate 
+    //until we go to the limit and we print out each time 
+    //we iterate an image of a water bottle. 
+    //This is taking more process but I only want to add one
+    //more image each time I press "Times I have drinked" button.
+    foreach (var src in imageSources)
+    {
+        <img src="@src" />
+    }
 }
 
 @code {
+    private string HideAlert { get; set; } = "d-none";
+    private string AlertContent { get; set; } = "This is a primary alert—check it out!";
+    private void ToggleAlert()
+    {
+        HideAlert = HideAlert == "" ? "d-none" : "";
+        AlertContent = "Stay hydrated!";
+    }
+
     private WaterIntakeGoal waterIntakeGoal = new();
     private string? imageSource;
     private int currentCount = 0;
+    private List<string> imageSources = new();
 
+
+    /// <summary>
+    /// this counts times you press the button and runs the UpdateImage function.
+    /// </summary>
     private void IncrementCount()
     {
-        currentCount++;
+        currentCount++; //Vi lägger till i count varje gång.
         UpdateImage();
     }
-    private void UpdateImage()
+
+    /// <summary>
+    /// Here we take the path to the image by using the UpdateImage function.
+    /// </summary>
+    private void UpdateImage() ///docstring
     {
-        int imageId = (int)Math.Ceiling((double)currentCount / waterIntakeGoal.Goal * 8);
-        imageId = Math.Min(imageId, 3);
-        imageSource = $"images/image{imageId}.jpg";
+        imageSources.Add($"images/image1.jpg"); //Bilden med url
+
+        // int imageId = (int)Math.Ceiling((double)currentCount / waterIntakeGoal.Goal * 8);
+        // imageId = Math.Min(imageId, 3);
+        
+        //imageSource = $"images/image1.jpg";
     }
+
+    DispatcherTimer timer1 = new DispatcherTimer();
+    private void button1_Click(object sender, RoutedEventArgs e)
+    {
+        timer1.Interval = new TimeSpan(0, 0, 0, 1);
+        timer1.Tick += new EventHandler(timer1_Tick);
+        timer1.Start();
+    }
+
+    int tik = 60;
+    void timer1_Tick(object sender, EventArgs e)
+    {
+        Countdown.Text = tik + " Seconds Remaining";
+        if (tik > 0)
+            tik--;
+        else
+            Countdown.Text = "Times Up";
+    }
+
+
+
 }
